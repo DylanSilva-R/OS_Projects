@@ -1,0 +1,58 @@
+
+
+Use this to learn more stuff: https://www.youtube.com/watch?v=oq29KUy29iQ&list=PLfqABt5AS4FmuQf70psXrsMLEDQXNkLq2&index=4
+
+Void pointers: https://www.youtube.com/watch?v=k3DbBOZRvRs
+
+Passing argumetns to threads in C: https://www.youtube.com/watch?v=HDohXvS6UIk&list=PLfqABt5AS4FmuQf70psXrsMLEDQXNkLq2&index=7
+
+Report
+
+
+Project Programming language
+____________________________
+
+I will be using C for this project.
+
+
+Environment
+___________
+
+My environment is Ubuntu 22.04.4 LTS x86_64. This environement is not virtualized, I am running it
+as its own OS on my dual-botted machine.
+
+Phase 1
+______
+
+Before creating the threads for banking functions. I first created an array of struct values to represent accounts. Each account contains an I.D, name, and money in their account.
+
+After I was done with creating a random amount of struct within the range of  5 and 15 with random amounts of money in each account from 100-10000. I created two thread variables: withdrawl and deposit.
+
+The...
+
+
+phase 2
+_______
+
+
+phase 3
+_______
+
+
+phase 4
+_______
+
+
+Challenges
+__________
+
+This link will show the difference between sleep functiosn on linux and windows: https://stackoverflow.com/questions/39156743/sleep-warning-implicit-declaration-of-function-sleep
+
+
+Deadlock analysis
+_________________
+
+
+
+Reflection
+__________
