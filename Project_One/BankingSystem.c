@@ -21,33 +21,45 @@ int maxAccounts = 15;
 int minAccountMoney = 100;
 int maxAccountMoney = 10000;
 
+int minBankFunctions = 5;
+int maxBankFunctions = 10;
+
 struct Account
 {
 	int num;
-	char name[50];
+	char * name;
 	int moneyInAccount;
-};
+} Account;
 
-void * withdrawlFunc(struct Account account)
+void * withdrawlFunc(void * arg)
 {
 	int randWithdrawl = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney;
-	printf("%s is trying to withdrawl %d\n", account.name, randWithdrawl);
+	
+	struct Account * temp = (struct Account*)arg; // Create temp variable of the argument structure.
 
-	if(randWithdrawl > account.moneyInAccount)
+	int moneyInAccount = temp -> moneyInAccount; // Variable that holds the temp account 
+	char name = temp -> name;
+
+	if(randWithdrawl > moneyInAccount)
 	{
-		printf("%s withdrawl ammount is over the amount of money they have in their account, whic is $%d\n", account.name, account.moneyInAccount);
+		printf("%s withdrawl ammount is over the amount of money they have in their account, whic is $%d\n", name, moneyInAccount);
 	}else
 	{
-		account.moneyInAccount = account.moneyInAccount - randWithdrawl;
-		printf("%s successfully withdrew $%d\n and now has $%d\n", account.name, randWithdrawl, account.moneyInAccount);
-	}
+		moneyInAccount = moneyInAccount - randWithdrawl;
+		temp -> moneyInAccount = moneyInAccount;
+		printf("%s successfully withdrew $%d\n and now has $%d\n", name, randWithdrawl, moneyInAccount);
+	}	
+
+	free(arg);
 }
 
-void * depositFunc(struct Account account)
+void * depositFunc(void * arg)
 {
-	int randDeposit = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney;
+	//int randDeposit = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney;
 
-	printf("%s successfully deposited %d\n and now have $%d\n", account.name, randDeposit, account.moneyInAccount);
+	//printf("%s successfully deposited %d\n and now have $%d\n", account.name, randDeposit, account.moneyInAccount);
+
+	free(arg);
 }
 
 
@@ -59,6 +71,7 @@ void printStructs(struct Account * accounts, int size)
 	}
 	printf("\n");
 }
+
 
 int main(int argc, char *argv[]) // argc = number of arguments being passed into program. argv = array of arguments.
 {
@@ -97,41 +110,61 @@ int main(int argc, char *argv[]) // argc = number of arguments being passed into
 	printf("Before withdrawls and deposits: \n");
 	printStructs(accounts, numOfAccounts);
 
-	// Phase one.
-	pthread_t withdrawl, deposit; // Threads that will handle withdrawl and deposits.
-
-	// This loop will choose randomly between a withdrawl and a deposit for a specific account in the array. Deposit = 1, Withdrawl = 0;
+	// Phase one. 
+	
 	int choice;
-	// Will have to create an array of threads to make this work.
-	// First: create and array of 
-	for(int i = 0; i < numOfAccounts; i++)
-	{
-		choice = rand() % 2;
+	int bankingFunction = rand() % (maxBankFunctions - minBankFunctions + 1) + minAccountMoney; 
+	pthread_t bankingFunctions[bankingFunction];
+	int arrayOfChoices [bankingFunction];
 
-		if(choice)
+	for(int i = 0; i < bankingFunction; i++)
+	{
+		choice = rand() % 2; // Only two outputs: 0 and 1
+
+		arrayOfChoices[i] = choice;
+	}
+
+	for(int i = 0; i < bankingFunction; i++)
+	{
+		
+		struct Account * accountAllocated = (struct Account * )malloc(sizeof(Account)); // Dynamically allocate memory for struct so it can be passed as an argument.
+		if(accountAllocated == NULL)
 		{
-			if (pthread_create(&withdrawl, NULL, &withdrawlFunc, &accounts[i]) != 0)
+			perror("Memory allocation failed");
+			return 1;
+		}
+
+		if(arrayOfChoices[i]) // User withdraws
+		{
+			if(pthread_create(&bankingFunctions[i], NULL, &withdrawlFunc, &accountAllocated) != 0)
 			{
-				printf("You don't have enough resources to create a thread.\n");
+				perror("Failed to create withdrawl thread.");
 				return 1;
 			}
-
-			if (pthread_join(withdrawl, NULL) != 0)
+		}else // User deposits
+		{
+			if(pthread_create(&bankingFunctions[i], NULL, &depositFunc, &accountAllocated) != 0)
 			{
-				printf("Thread couldn't join to main thread.\n");
+				perror("Failed to create deposit thread.");
+				return 1;
+			}
+		}
+	}
+
+	for(int i = 0; i < bankingFunction; i++)
+	{
+		if(arrayOfChoices[i])
+		{
+			if(pthread_join(bankingFunctions[i], NULL) != 0)
+			{
+				perror("Failed to join withdrawl thread.");
 				return 1;
 			}
 		}else
 		{
-			if (pthread_create(&deposit, NULL, &depositFunc, &accounts[i]) != 0)
+			if(pthread_join(bankingFunctions[i], NULL) != 0)
 			{
-				printf("You don't have enough resources to create a thread.\n");
-				return 1;
-			}
-
-			if (pthread_join(deposit, NULL) != 0)
-			{
-				printf("Thread couldn't join to main thread.\n");
+				perror("Failed to join deposit thread.");
 				return 1;
 			}
 		}
