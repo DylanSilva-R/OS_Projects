@@ -13,73 +13,65 @@
  * 	- Phase 4: Resolve deadlock using timeout mechanisms.
  */
 
-int lock = 0;
-// int bankMoney = 1000000;
-int minAccounts = 5;
-int maxAccounts = 15;
+int minAccounts = 50;
+int maxAccounts = 100;
 
 int minAccountMoney = 100;
 int maxAccountMoney = 10000;
+int moneyInAccountVal;
 
 int minBankFunctions = 5;
-int maxBankFunctions = 10;
+int maxBankFunctions = 20;
 
-struct Account
+
+pthread_mutex_t mutexWithDrawl;
+pthread_mutex_t mutexDeposit;
+
+
+void * withdrawalFunc(void * arg)
 {
-	int num;
-	char * name;
-	int moneyInAccount;
-} Account;
 
-void * withdrawlFunc(void * arg)
-{
-	int randWithdrawl = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney;
-	
-	struct Account * temp = (struct Account*)arg; // Create temp variable of the argument structure.
+	// Phase 2: Manage race condition with mutex. Mutex being pthread_mutex_lock and pthread_mutex_unlock.
 
-	int moneyInAccount = temp -> moneyInAccount; // Variable that holds the temp account 
-	char name = temp -> name;
+	pthread_mutex_lock(&mutexWithDrawl);
+	sleep(1);
 
-	if(randWithdrawl > moneyInAccount)
+	int randWithdrawl = *(int*)arg;
+
+	if(randWithdrawl > moneyInAccountVal)
 	{
-		printf("%s withdrawl ammount is over the amount of money they have in their account, whic is $%d\n", name, moneyInAccount);
+		printf("It seems like a user is trying to withdraw $%d, which exceeds the accounts value.\n", randWithdrawl);
 	}else
 	{
-		moneyInAccount = moneyInAccount - randWithdrawl;
-		temp -> moneyInAccount = moneyInAccount;
-		printf("%s successfully withdrew $%d\n and now has $%d\n", name, randWithdrawl, moneyInAccount);
-	}	
+		moneyInAccountVal -= (int)randWithdrawl;
+		printf("User is withdrawing $%d. Money left in account: $%d\n", randWithdrawl, moneyInAccountVal);
+	}
 
+	pthread_mutex_unlock(&mutexWithDrawl);
 	free(arg);
 }
 
 void * depositFunc(void * arg)
 {
-	//int randDeposit = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney;
+	
+	// Phase 2: Manage race condition with mutex. Mutex being pthread_mutex_lock and pthread_mutex_unlock.
 
-	//printf("%s successfully deposited %d\n and now have $%d\n", account.name, randDeposit, account.moneyInAccount);
+	pthread_mutex_lock(&mutexDeposit); // Lock thread.
+	sleep(1);
 
-	free(arg);
+	int randDeposit = *(int*)arg;
+
+	moneyInAccountVal += (int)randDeposit;
+	printf("User is depositing $%d. Money in account after deposit: $%d\n", randDeposit, moneyInAccountVal);
+
+	pthread_mutex_unlock(&mutexDeposit); // Unlock thread.
+	free(arg); // Free allocated memory.
 }
 
-
-void printStructs(struct Account * accounts, int size)
-{
-	for (int i = 0; i < size; i++)
-	{
-		printf("%s had I.D %d and has $%d in their account.\n", accounts[i].name, accounts[i].num, accounts[i].moneyInAccount);
-	}
-	printf("\n");
-}
 
 
 int main(int argc, char *argv[]) // argc = number of arguments being passed into program. argv = array of arguments.
 {
-	/*
-	 * create thread variable with pthread_t
-	 * create thread with pthread_create(arg1, arg2, arg3, arg4). Parameters: Pointer, customization of attributes, function to executre, arguments for function.
-	 * Error codes that return from thread related functions aren't zero.
-	 */
 	printf("______________________________________\n");
 	printf("|Banking System (With multithreading)|\n");
 	printf("|____________________________________|\n");
@@ -87,89 +79,92 @@ int main(int argc, char *argv[]) // argc = number of arguments being passed into
 	printf("\n");
 
 	srand(time(NULL));
-	// Will have to create random number of accounts and organize them in an array.
 
-	int moneyInAccountVal;
-	int numOfAccounts = rand() % (maxAccounts - minAccounts + 1) + minAccounts; // Create random number within range of 5-15
-	struct Account accounts[numOfAccounts];											   // Structs array of accounts that contain ID, account name, and money in their account.
+	moneyInAccountVal = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney; // Create random amount of money ranging from for bank account.
+	int numOfUsers = rand() % (maxAccounts - minAccounts + 1) + minAccounts; // Create random number within range of 5-15 to represent users.
 
-	printf("Number of accounts: %d\n", numOfAccounts);
+	printf("Money in account: $%d\n", moneyInAccountVal);
+	printf("Number of users: %d\n", numOfUsers);
 	printf("\n");
 
-	for (int i = 0; i < numOfAccounts; i++)
-	{
-		// Allocate memory for each string withing the
-		moneyInAccountVal = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney;
-
-		accounts[i].moneyInAccount = moneyInAccountVal;
-		accounts[i].num = i;
-
-		snprintf(accounts[i].name, sizeof(accounts[i].name), "Account %d", i); // Parameters (String buffer, size of bytes to write to buffer, format of characters)
-	}
-
-	printf("Before withdrawls and deposits: \n");
-	printStructs(accounts, numOfAccounts);
-
-	// Phase one. 
+	// Phase one: Create user threads and make the threads withdrawl or deposit from account.
 	
 	int choice;
-	int bankingFunction = rand() % (maxBankFunctions - minBankFunctions + 1) + minAccountMoney; 
-	pthread_t bankingFunctions[bankingFunction];
-	int arrayOfChoices [bankingFunction];
 
-	for(int i = 0; i < bankingFunction; i++)
+	pthread_t bankingFunctions[numOfUsers]; // Initialize array of threads for banking functions.
+	pthread_mutex_init(&mutexDeposit,  NULL); // Initialize mutex to manage deposits.
+	pthread_mutex_init(&mutexWithDrawl, NULL); // Initliaze mutex to manage withdrawals.
+
+	int arrayOfChoices [numOfUsers];
+
+	for(int i = 0; i < numOfUsers; i++)
 	{
 		choice = rand() % 2; // Only two outputs: 0 and 1
 
 		arrayOfChoices[i] = choice;
 	}
 
-	for(int i = 0; i < bankingFunction; i++)
+	for(int i = 0; i < numOfUsers; i++)
 	{
-		
-		struct Account * accountAllocated = (struct Account * )malloc(sizeof(Account)); // Dynamically allocate memory for struct so it can be passed as an argument.
-		if(accountAllocated == NULL)
-		{
-			perror("Memory allocation failed");
-			return 1;
-		}
+		/*
+		* This for loop generates a random value. This random value will be utilized in either the withdrawal of deposit function. 
+		* Using the arrayOfChoices array, this will determine which user will withdrawl or deposit.
+		*/
+		int randomVal = rand() % (maxAccountMoney - minAccountMoney + 1) + minAccountMoney;
+		int * memoryForRandVal = (int*)malloc(sizeof(int));
+		*memoryForRandVal = randomVal;
 
-		if(arrayOfChoices[i]) // User withdraws
+		if(arrayOfChoices[i]) // User withdrawal
 		{
-			if(pthread_create(&bankingFunctions[i], NULL, &withdrawlFunc, &accountAllocated) != 0)
+			if(pthread_create(&bankingFunctions[i], NULL, &withdrawalFunc, memoryForRandVal) != 0) // Create thread to withdrawal money from account.
 			{
-				perror("Failed to create withdrawl thread.");
+				perror("Failed to create withdrawl thread.\n");
 				return 1;
+			}else
+			{
+				printf("User %d is withdrawling $%d from account.\n", i, randomVal);
 			}
 		}else // User deposits
 		{
-			if(pthread_create(&bankingFunctions[i], NULL, &depositFunc, &accountAllocated) != 0)
+			if(pthread_create(&bankingFunctions[i], NULL, &depositFunc, memoryForRandVal) != 0) // Create thread to deposit money to account.
 			{
-				perror("Failed to create deposit thread.");
+				perror("Failed to create deposit thread.\n");
 				return 1;
+			}else
+			{
+				printf("User %d is depositing $%d from account.\n", i, randomVal);
 			}
 		}
 	}
+	
+	printf("\n");
+	printf("Joining all user threads.\n");
+	printf("\n");
 
-	for(int i = 0; i < bankingFunction; i++)
+	for(int i = 0; i < numOfUsers; i++)
 	{
+		/*
+		* This for loop focuses on joining threads to the main thread.
+		*/
 		if(arrayOfChoices[i])
 		{
-			if(pthread_join(bankingFunctions[i], NULL) != 0)
+			if(pthread_join(bankingFunctions[i], NULL) != 0) // Join threads for user withdrawls.
 			{
-				perror("Failed to join withdrawl thread.");
+				perror("Failed to join withdrawl thread.\n");
 				return 1;
 			}
 		}else
 		{
-			if(pthread_join(bankingFunctions[i], NULL) != 0)
+			if(pthread_join(bankingFunctions[i], NULL) != 0) // Join thread for user deposits.
 			{
-				perror("Failed to join deposit thread.");
+				perror("Failed to join deposit thread.\n");
 				return 1;
 			}
 		}
 	}
 
+	pthread_mutex_destroy(&mutexDeposit); // Destry mutex for deposit.
+	pthread_mutex_destroy(&mutexWithDrawl); // Destroy mutex for withdrawl.
 
 	return 0;
 }

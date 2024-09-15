@@ -24,12 +24,7 @@ as its own OS on my dual-botted machine.
 Phase 1
 ______
 
-Before creating the threads for banking functions. I first created an array of struct values to represent accounts. Each account contains an I.D, name, and money in their account.
-
-After I was done with creating a random amount of struct within the range of  5 and 15 with random amounts of money in each account from 100-10000. I created two thread variables: withdrawl and deposit.
-
-The...
-
+Before creating threads for different banking transactions, I created a variable that contains a random amount of money that the bank account will contain ranging from $100-$10000.
 
 phase 2
 _______
