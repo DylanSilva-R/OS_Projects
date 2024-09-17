@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define TIME_OUT 3
-#define NUM_THREADS 500
+#define NUM_THREADS 1000
 
 /*
  *  - Phase 1: Threads will represent different banking transactions. Done
@@ -118,7 +118,6 @@ void threadSimluation()
 	// Establishing handler.
 	// Signal handler sets flag to unblock deadlocks.
 	signal(SIGALRM, timeout_handler);
-	alarm(TIME_OUT); // Schedule delivery of SIGALARM signal after specified time.
 
 	pthread_t bankingFunctions[NUM_THREADS]; // Initialize array of threads for banking functions.
 	userData userArray[NUM_THREADS]; // Create a struct array for all users.
@@ -181,7 +180,8 @@ void threadSimluation()
 		}
 
 	}
-
+	
+	alarm(TIME_OUT); // Schedule delivery of SIGALARM signal after specified time.
 
 	printf("\n");
 	printf("Joining all user threads.\n");
