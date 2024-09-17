@@ -8,7 +8,7 @@
 #include <string.h>
 
 #define TIME_OUT 3
-#define NUM_THREADS 5
+#define NUM_THREADS 500
 
 /*
  *  - Phase 1: Threads will represent different banking transactions. Done
@@ -25,12 +25,12 @@ volatile int timeoutFlag = 0;
 
 pthread_mutex_t mutexes[NUM_THREADS];
 
-// Phase 3: Deadlock Handler for the timeout signals
-//
+// Phase 4: Deadlock Handler for the timeout signals
 void timeout_handler(int signum) {
     timeoutFlag = 1;
-    // Attempt to unlock all mutexes to avoid hanging
-    for (int i = 0; i < NUM_THREADS; i++) {
+    // unlock all mutexes.
+    for (int i = 0; i < NUM_THREADS; i++)
+	{
         pthread_mutex_unlock(&mutexes[i]);
     }
 }
@@ -115,11 +115,10 @@ void threadSimluation()
 
 	srand(time(NULL));
 
-    struct sigaction sa;
-    sa.sa_handler = timeout_handler;
-    sigemptyset(&sa.sa_mask);
-    sa.sa_flags = 0;
-    sigaction(SIGALRM, &sa, NULL);	
+	// Establishing handler.
+	// Signal handler sets flag to unblock deadlocks.
+	signal(SIGALRM, timeout_handler);
+	alarm(TIME_OUT); // Schedule delivery of SIGALARM signal after specified time.
 
 	pthread_t bankingFunctions[NUM_THREADS]; // Initialize array of threads for banking functions.
 	userData userArray[NUM_THREADS]; // Create a struct array for all users.
@@ -183,7 +182,6 @@ void threadSimluation()
 
 	}
 
-	alarm(TIME_OUT);
 
 	printf("\n");
 	printf("Joining all user threads.\n");
@@ -228,7 +226,7 @@ int main(int argc, char *argv[]) // argc = number of arguments being passed into
 
 		if(fgets(bufMenuIn, 3, stdin) == NULL)
 		{
-			printf("Erro reading input.");
+			printf("Error reading input.\n");
 			continue;
 		}
 
@@ -260,9 +258,7 @@ int main(int argc, char *argv[]) // argc = number of arguments being passed into
 		{
 			printf("It seems like you input the wrong data type. Please try again.\n");
 		}
-
 	}
-
 
 	return 0;
 }
