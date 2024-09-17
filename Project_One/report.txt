@@ -24,7 +24,7 @@ as its own OS on my dual-botted machine.
 Phase 1
 ______
 
-Before creating threads for different banking transactions, I created a variable that contains a random amount of money that the bank account will contain ranging from $100-$10000.
+Before creating threads for different banking transactions, I created a variable that contains a random amount of money that the bank account will contain ranging from $100-$100000. After that, there will be another variable that will contain a random amount of users ranging from 50-100.
 
 phase 2
 _______
