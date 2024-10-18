@@ -3,7 +3,7 @@
 
 all: BankingSystem.o
 	@echo "Sucessfully compiled"
-	@./BankingSystem.o
+	@./BankingSystemTest.o
 
 BankingSystem.o: BankingSystem.c
 	@echo "Compiling BankingSystem.c"
