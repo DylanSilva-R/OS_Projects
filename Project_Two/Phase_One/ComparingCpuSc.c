@@ -13,32 +13,47 @@
 * 6) Randomize data.
 */
 
-
-
 void FCFS(struct Process * pArray, int size) // First-come first-serve function.
 {
+    // Have to include idle time when 
     int totalTime = 0;
+    int idleTime = 0;
     int calcTurnaroundTime;
     int calcWaitTime;
 
-    for(int i = 0; i < size; i++)
+    // Reconfigure, create a while if loop
+
+    int i = 0;
+
+    while(i < size)
     {
-        totalTime += pArray[i].burstTime;
-        
-        calcTurnaroundTime = totalTime - pArray[i].arrivalTime;
-        calcWaitTime = calcTurnaroundTime - pArray[i].burstTime;
+        if(totalTime >= pArray[i].arrivalTime)
+        {   
+            calcTurnaroundTime = (totalTime + pArray[i].burstTime) - pArray[i].arrivalTime;
+            calcWaitTime = calcTurnaroundTime - pArray[i].burstTime;
+            totalTime += pArray[i].burstTime;
 
-        // Something here is in the wrong order.
-        pArray[i].turnaroundTime = calcTurnaroundTime;
-        pArray[i].waitTime = calcWaitTime;
+            pArray[i].turnaroundTime = calcTurnaroundTime;
+            pArray[i].waitTime = calcWaitTime;
 
-        // printf("Turnaround time for %s: %d\n", pArray[i].ProcessID, pArray[i].turnaroundTime);
-        // printf("wait time for %s: %d\n", pArray[i].ProcessID, pArray[i].waitTime);
+            i++;
+        }else
+        {
+            if(i ==  0)
+            {
+                idleTime += pArray[i].arrivalTime;
+                totalTime += idleTime;
+            }else
+            {
+                idleTime += abs(totalTime - pArray[i].arrivalTime);
+                totalTime += abs(totalTime - pArray[i].arrivalTime); 
+            }
+
+        }
     }
 
-
     printf("Total time to run all processes: %d\n", totalTime);
-
+    printf("Total idle time: %d\n", idleTime);
 }
 
 
@@ -56,6 +71,55 @@ void print_Processes(struct Process * pArray, int size)
     }
 }
 
+void testFCFS()
+{
+    struct Process pArrayIAN[] = {{"P1", 0, 1, 0, 0}, // idle and no idle array.
+                                  {"P2", 5, 2, 0, 0},
+                                  {"P3", 8, 3, 0, 0},
+                                  {"P4", 9, 4, 0, 0},
+                                  {"P5", 10, 5, 0, 0}};
+
+    int size = sizeof(pArrayIAN) / sizeof(pArrayIAN[0]);
+
+    printf("Sort relative to arrival time: \n");
+    mergeSort(pArrayIAN, 0, size-1, 0);
+
+    FCFS(pArrayIAN, size);
+
+    print_Processes(pArrayIAN, size);
+
+    struct Process pArrayI[] = {{"P1", 1, 2, 0, 0}, // No idling array.
+                               {"P1", 2, 3, 0, 0},
+                               {"P2", 3, 4, 0, 0},
+                               {"P3", 4, 3, 0, 0}};
+
+    size = sizeof(pArrayI) / sizeof(pArrayI[0]);
+
+    printf("Sort relative to arrival time: \n");
+    mergeSort(pArrayI, 0, size-1, 0);
+
+    FCFS(pArrayI, size);
+
+    print_Processes(pArrayI, size);
+
+    struct Process pArrayBI [] = {{"P1", 1, 2, 0, 0}, // Two big idles 
+                                {"P2", 10, 5, 0, 0}};
+    
+    size = sizeof(pArrayBI) / sizeof(pArrayBI[0]);
+                                
+    printf("Sort relative to arrival time: \n");
+    mergeSort(pArrayBI, 0, size-1, 0);
+
+    FCFS(pArrayBI, size);
+
+    print_Processes(pArrayBI, size); 
+}
+
+void testSJF()
+{
+    
+}
+
 
 void menu()
 {
@@ -65,29 +129,7 @@ void menu()
 
 int main()
 {
-    struct Process pArray[] = {{"P1", 1, 5, 0, 0},
-                               {"P2", 0, 9, 0, 0},
-                               {"P3", 5, 8, 0, 0},
-                               {"P4", 3, 15, 0, 0},
-                               {"P5", 10, 20, 0, 0}};
-
-    int size = sizeof(pArray) / sizeof(pArray[0]);
-    printf("Before sort\n");
-    print_Processes(pArray, size);
-
-    printf("Sort relative to arrival time: \n");
-    mergeSort(pArray, 0, size-1, 0);
-    print_Processes(pArray, size);
-
-    FCFS(pArray, size);
-
-
-    print_Processes(pArray, size);
-
-
-    // printf("Sort relative to burst time: \n");
-    // mergeSort(pArray, 0, size-1, 1);
-    // print_Processes(pArray, size);
+    testFCFS();
 
 
     return 1;
