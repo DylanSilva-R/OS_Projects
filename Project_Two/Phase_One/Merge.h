@@ -47,6 +47,7 @@ void merge(struct Process * pArray, int left, int mid, int right, int type) // D
     {
         while(i < newLeftHalf && j < newRightHalf)
         {
+            // Sort relative to arrival time.
             if (leftPArray[i].arrivalTime <= rightPArray[j].arrivalTime) 
             {
                 pArray[k] = leftPArray[i];
@@ -63,6 +64,7 @@ void merge(struct Process * pArray, int left, int mid, int right, int type) // D
     {
         while(i < newLeftHalf && j < newRightHalf)
         {
+            // Sort relative to burst time.
             if (leftPArray[i].burstTime <= rightPArray[j].burstTime) 
             {
                 pArray[k] = leftPArray[i];

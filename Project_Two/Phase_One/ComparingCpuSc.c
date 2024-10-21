@@ -5,10 +5,10 @@
 
 /*
 * TODO:
-* 1) Come up with some constant data to test out functions. done!
-* 2) Start FCFS
-* 3) Test FCFS 
-* 4) Start SJF
+* 1) Come up with some constant data to test out functions. Done!
+* 2) Start FCFS. Done
+* 3) Test FCFS. Done
+* 4) Start SJF.
 * 5) Test SJF
 * 6) Randomize data.
 */
@@ -59,7 +59,7 @@ void FCFS(struct Process * pArray, int size) // First-come first-serve function.
 
 void SJF(struct Process * pArray, int size) // Shortest-job first function.
 {
-
+    // This function might be completely uncessary.
 }
 
 void print_Processes(struct Process * pArray, int size)
@@ -117,20 +117,52 @@ void testFCFS()
 
 void testSJF()
 {
+    struct Process pArrayIAN[] = {{"P1", 0, 1, 0, 0}, // idle and no idle array.
+                                  {"P2", 5, 2, 0, 0},
+                                  {"P3", 8, 3, 0, 0},
+                                  {"P4", 9, 4, 0, 0},
+                                  {"P5", 10, 5, 0, 0}};
+
+    int size = sizeof(pArrayIAN) / sizeof(pArrayIAN[0]);
+
+    printf("Sort relative to arrival time: \n");
+    mergeSort(pArrayIAN, 0, size-1, 1);
+
+    FCFS(pArrayIAN, size);
+
+    print_Processes(pArrayIAN, size);
+
+    struct Process pArrayI[] = {{"P1", 1, 2, 0, 0}, // No idling array.
+                               {"P1", 2, 3, 0, 0},
+                               {"P2", 3, 4, 0, 0},
+                               {"P3", 4, 3, 0, 0}};
+
+    size = sizeof(pArrayI) / sizeof(pArrayI[0]);
+
+    printf("Sort relative to arrival time: \n");
+    mergeSort(pArrayI, 0, size-1, 1);
+
+    FCFS(pArrayI, size);
+
+    print_Processes(pArrayI, size);
+
+    struct Process pArrayBI [] = {{"P1", 1, 2, 0, 0}, // Two big idles 
+                                {"P2", 10, 5, 0, 0}};
     
+    size = sizeof(pArrayBI) / sizeof(pArrayBI[0]);
+                                
+    printf("Sort relative to arrival time: \n");
+    mergeSort(pArrayBI, 0, size-1, 1);
+
+    FCFS(pArrayBI, size);
+
+    print_Processes(pArrayBI, size);    
 }
-
-
-void menu()
-{
-
-}
-
 
 int main()
 {
     testFCFS();
-
+    testSJF();
 
     return 1;
 }
