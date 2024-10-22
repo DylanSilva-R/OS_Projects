@@ -5,9 +5,9 @@
 #include "Merge.h"
 
 #define MAX_METRIC 20
-#define MIN_METRIC 10
-#define MAX_PROCESSES 50
-#define MIN_PROCESSES 10
+#define MIN_METRIC 5
+#define MAX_PROCESSES 10
+#define MIN_PROCESSES 5
 /*
 * TODO:
 * 1) Come up with some constant data to test out functions. Done!
@@ -15,10 +15,10 @@
 * 3) Test FCFS. Done
 * 4) Start SJF. Done
 * 5) Test SJF. Done
-* 6) Randomize data.
+* 6) Randomize data. Done
 */
 
-void FCFS(struct Process * pArray, int size) // First-come first-serve function.
+void calculate_Scheduling(struct Process * pArray, int size, int * totalWt, int * totalTt, int * totalIdlTime) // First-come first-serve function.
 {
     // Have to include idle time when 
     int totalTime = 0;
@@ -41,6 +41,9 @@ void FCFS(struct Process * pArray, int size) // First-come first-serve function.
             pArray[i].turnaroundTime = calcTurnaroundTime;
             pArray[i].waitTime = calcWaitTime;
 
+            *totalWt += calcWaitTime;
+            *totalTt += calcTurnaroundTime;
+
             i++;
         }else
         {
@@ -59,6 +62,8 @@ void FCFS(struct Process * pArray, int size) // First-come first-serve function.
 
     printf("Total time to run all processes: %d\n", totalTime);
     printf("Total idle time: %d\n", idleTime);
+
+    *totalIdlTime += idleTime;
 }
 
 
@@ -74,96 +79,10 @@ void print_Processes(struct Process * pArray, int size)
     printf("______________________________\n");
 }
 
-void testFCFS()
-{
-    struct Process pArrayIAN[] = {{"P1", 0, 1, 0, 0}, // idle and no idle array.
-                                  {"P2", 5, 2, 0, 0},
-                                  {"P3", 8, 3, 0, 0},
-                                  {"P4", 9, 4, 0, 0},
-                                  {"P5", 10, 5, 0, 0}};
-
-    int size = sizeof(pArrayIAN) / sizeof(pArrayIAN[0]);
-
-    printf("Sort relative to arrival time: \n");
-    mergeSort(pArrayIAN, 0, size-1, 0);
-
-    FCFS(pArrayIAN, size);
-
-    print_Processes(pArrayIAN, size);
-
-    struct Process pArrayI[] = {{"P1", 1, 2, 0, 0}, // No idling array.
-                               {"P1", 2, 3, 0, 0},
-                               {"P2", 3, 4, 0, 0},
-                               {"P3", 4, 3, 0, 0}};
-
-    size = sizeof(pArrayI) / sizeof(pArrayI[0]);
-
-    printf("Sort relative to arrival time: \n");
-    mergeSort(pArrayI, 0, size-1, 0);
-
-    FCFS(pArrayI, size);
-
-    print_Processes(pArrayI, size);
-
-    struct Process pArrayBI [] = {{"P1", 1, 2, 0, 0}, // Two big idles 
-                                {"P2", 10, 5, 0, 0}};
-    
-    size = sizeof(pArrayBI) / sizeof(pArrayBI[0]);
-                                
-    printf("Sort relative to arrival time: \n");
-    mergeSort(pArrayBI, 0, size-1, 0);
-
-    FCFS(pArrayBI, size);
-
-    print_Processes(pArrayBI, size); 
-}
-
-void testSJF()
-{
-    struct Process pArrayIAN[] = {{"P1", 0, 1, 0, 0}, // idle and no idle array.
-                                  {"P2", 5, 2, 0, 0},
-                                  {"P3", 8, 3, 0, 0},
-                                  {"P4", 9, 4, 0, 0},
-                                  {"P5", 10, 5, 0, 0}};
-
-    int size = sizeof(pArrayIAN) / sizeof(pArrayIAN[0]);
-
-    printf("Sort relative to arrival time: \n");
-    mergeSort(pArrayIAN, 0, size-1, 1);
-
-    FCFS(pArrayIAN, size);
-
-    print_Processes(pArrayIAN, size);
-
-    struct Process pArrayI[] = {{"P1", 1, 2, 0, 0}, // No idling array.
-                               {"P1", 2, 3, 0, 0},
-                               {"P2", 3, 4, 0, 0},
-                               {"P3", 4, 3, 0, 0}};
-
-    size = sizeof(pArrayI) / sizeof(pArrayI[0]);
-
-    printf("Sort relative to arrival time: \n");
-    mergeSort(pArrayI, 0, size-1, 1);
-
-    FCFS(pArrayI, size);
-
-    print_Processes(pArrayI, size);
-
-    struct Process pArrayBI [] = {{"P1", 1, 2, 0, 0}, // Two big idles 
-                                {"P2", 10, 5, 0, 0}};
-    
-    size = sizeof(pArrayBI) / sizeof(pArrayBI[0]);
-                                
-    printf("Sort relative to arrival time: \n");
-    mergeSort(pArrayBI, 0, size-1, 1);
-
-    FCFS(pArrayBI, size);
-
-    print_Processes(pArrayBI, size);    
-}
 
 void create_Processes(struct Process pArray[], int processes)
 {
+
     int arrivalTime;
     int burstTime;
 
@@ -185,30 +104,74 @@ void create_Processes(struct Process pArray[], int processes)
     //print_Processes(pArray, processes);
 }
 
+
 int main()
 {
     // Create random data for both CPU scheduling algorithms and collect data.
     // testFCFS();
     // testSJF();
-
+    
+    clock_t start = clock();
     srand(time(NULL));
 
+    int iterations = 100;
+    int totalProcesses = 0;
 
-    for(int i = 0; i < 1; i++)
+    int totalWtFCFS = 0; // Total waittime for FCFS
+    int totalTtFCFS = 0; // Total turnaround time for FCFS
+    int totalIdlTimeFCFS = 0; // Total idle time for FCFS.
+
+    int totalWTSJF = 0;
+    int totalTtSJF = 0;
+    int totalIdlTimeSJF = 0;
+
+    for(int i = 0; i < iterations; i++)
     {
+        printf("Iteration %d\n", i);
+
         int processes = rand() % (MAX_PROCESSES - MIN_PROCESSES + 1) + MIN_PROCESSES;
+        totalProcesses += processes;
         struct Process pArray[processes];
 
         create_Processes(pArray, processes);
 
         mergeSort(pArray, 0, processes-1, 0); //FCFS
-        FCFS(pArray, processes);
+        calculate_Scheduling(pArray, processes, &totalWtFCFS, &totalTtFCFS, &totalIdlTimeFCFS);
         print_Processes(pArray, processes);
 
+
         mergeSort(pArray, 0, processes-1, 1); // SJF
-        FCFS(pArray, processes);
+        calculate_Scheduling(pArray, processes, &totalWTSJF, &totalTtSJF, &totalIdlTimeSJF);
         print_Processes(pArray, processes);
+
     }
+
+    float avgWtFCFS = (float)totalWtFCFS / totalProcesses;
+    float avgTtFCFS = (float)totalTtFCFS / totalProcesses;
+    float avgIdlTimeFCFS = (float)totalIdlTimeFCFS / iterations;
+
+    float avgWtSJF = (float)totalWTSJF / totalProcesses;
+    float avgTtSJF = (float)totalTtSJF / totalProcesses;
+    float avgIdlTimeSJF = (float)totalIdlTimeSJF / iterations;
+
+    printf("\n");
+    printf("Averages for %d iterations of FCFS for %d processes\n", iterations, totalProcesses);
+    printf("Avg wait: %.2f\n", avgWtFCFS);
+    printf("Avg T.T: %.2f\n", avgTtFCFS);
+    printf("Avg idle: %.2f\n", avgIdlTimeFCFS);
+    printf("\n");
+
+    printf("\n");
+    printf("Averages for %d iterations of SJF for %d processes\n", iterations, totalProcesses);
+    printf("Avg wait: %.2f\n", avgWtSJF);
+    printf("Avg T.T: %.2f\n", avgTtSJF);
+    printf("Avg idle: %.2f\n", avgIdlTimeSJF);
+    printf("\n");
+
+
+    clock_t end = clock();
+
+    printf("Run time: %.2fs\n", (float)(end - start)/CLOCKS_PER_SEC);
 
     return 1;
 }

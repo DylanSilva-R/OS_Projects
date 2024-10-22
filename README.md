@@ -13,7 +13,7 @@ The purpose of this repository is store my OS projects.
 
 ### Installing
 
-* Just clone the repository and you can access individual folders that contain there own programs.
+* Just clone the repository and you can access individual folders that contain their own programs.
 
 ### Executing program
 

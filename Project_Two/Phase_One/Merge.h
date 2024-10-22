@@ -3,12 +3,11 @@
 
 struct Process
 {
-    char ProcessID[10];
+    char ProcessID[13];
     int arrivalTime;
     int burstTime;
     int waitTime;
     int turnaroundTime;
-    //int idleTime;
 };
 
 void merge(struct Process * pArray, int left, int mid, int right, int type) // Divide
