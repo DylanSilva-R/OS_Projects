@@ -1,15 +1,20 @@
 
+#include <time.h>
 #include <stdio.h>
 #include <stdlib.h>
 #include "Merge.h"
 
+#define MAX_METRIC 20
+#define MIN_METRIC 10
+#define MAX_PROCESSES 50
+#define MIN_PROCESSES 10
 /*
 * TODO:
 * 1) Come up with some constant data to test out functions. Done!
 * 2) Start FCFS. Done
 * 3) Test FCFS. Done
-* 4) Start SJF.
-* 5) Test SJF
+* 4) Start SJF. Done
+* 5) Test SJF. Done
 * 6) Randomize data.
 */
 
@@ -57,18 +62,16 @@ void FCFS(struct Process * pArray, int size) // First-come first-serve function.
 }
 
 
-void SJF(struct Process * pArray, int size) // Shortest-job first function.
-{
-    // This function might be completely uncessary.
-}
-
 void print_Processes(struct Process * pArray, int size)
 {
+    // Implement a readjustable table.
+    printf("______________________________\n");
     printf("| Pi | A.T | B.T | W.T | T.T |\n");
     for(int i = 0; i < size; i++)
     {
         printf("| %s | %d | %d | %d | %d |\n", pArray[i].ProcessID, pArray[i].arrivalTime, pArray[i].burstTime, pArray[i].waitTime, pArray[i].turnaroundTime);
     }
+    printf("______________________________\n");
 }
 
 void testFCFS()
@@ -159,10 +162,53 @@ void testSJF()
     print_Processes(pArrayBI, size);    
 }
 
+void create_Processes(struct Process pArray[], int processes)
+{
+    int arrivalTime;
+    int burstTime;
+
+    for(int i = 0; i < processes; i++)
+    {
+        arrivalTime = rand() % (MAX_METRIC - MIN_METRIC + 1) + MIN_METRIC;
+        burstTime = rand() % (MAX_METRIC - MIN_METRIC + 1) + MIN_METRIC;
+
+        char processesID[10];
+        snprintf(pArray[i].ProcessID, sizeof(pArray[i].ProcessID), "P%d", i); 
+
+        pArray[i].arrivalTime = arrivalTime;
+        pArray[i].burstTime = burstTime;
+        pArray[i].turnaroundTime = 0;
+        pArray[i].waitTime = 0;
+
+    }
+
+    //print_Processes(pArray, processes);
+}
+
 int main()
 {
-    testFCFS();
-    testSJF();
+    // Create random data for both CPU scheduling algorithms and collect data.
+    // testFCFS();
+    // testSJF();
+
+    srand(time(NULL));
+
+
+    for(int i = 0; i < 1; i++)
+    {
+        int processes = rand() % (MAX_PROCESSES - MIN_PROCESSES + 1) + MIN_PROCESSES;
+        struct Process pArray[processes];
+
+        create_Processes(pArray, processes);
+
+        mergeSort(pArray, 0, processes-1, 0); //FCFS
+        FCFS(pArray, processes);
+        print_Processes(pArray, processes);
+
+        mergeSort(pArray, 0, processes-1, 1); // SJF
+        FCFS(pArray, processes);
+        print_Processes(pArray, processes);
+    }
 
     return 1;
 }

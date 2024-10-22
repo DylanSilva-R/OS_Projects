@@ -3,7 +3,7 @@
 
 struct Process
 {
-    char ProcessID[5];
+    char ProcessID[10];
     int arrivalTime;
     int burstTime;
     int waitTime;
