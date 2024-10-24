@@ -3,11 +3,12 @@
 
 all: CPUDeadlock.o
 	@echo "Sucessfully compiled"
+	@ chmod +x CPUDeadlock.o
 	@./CPUDeadlock.o
 
-ComparingCpuSc.o: CPUDeadlock.c
+CPUDeadlock.o: CPUDeadlock.c
 	@echo "Compiling CPU scheduling comparison program."
-	@gcc -g CPUDeadlock.c -o CPUDeadlock.o
+	@gcc CPUDeadlock.c -o CPUDeadlock.o
 	
 clean:
 	@rm CPUDeadlock.o
